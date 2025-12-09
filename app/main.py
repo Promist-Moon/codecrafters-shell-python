@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 import sys
@@ -7,7 +8,7 @@ def main():
     while True:
         sys.stdout.write("$ ")
 
-        commands = ["echo", "type", "exit"]
+        commands = ["echo", "type", "exit", "pwd"]
         
         ipt = input()
         parts = ipt.split(maxsplit=1)
@@ -28,6 +29,8 @@ def main():
                 else: 
                     # get absolute path
                     print(f"{args} is {path}")
+        elif command == "pwd":
+            print(os.getcwd())
         else:
             # Check if command exists in system PATH
             path = shutil.which(command)

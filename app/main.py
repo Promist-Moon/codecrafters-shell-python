@@ -8,7 +8,7 @@ def main():
     while True:
         sys.stdout.write("$ ")
 
-        commands = ["echo", "type", "exit", "pwd"]
+        commands = ["echo", "type", "exit", "pwd", "cd"]
         
         ipt = input()
         parts = ipt.split(maxsplit=1)
@@ -31,6 +31,12 @@ def main():
                     print(f"{args} is {path}")
         elif command == "pwd":
             print(os.getcwd())
+        elif command == "cd":
+            # only support 'cd' with absolute path
+            try:
+                os.chdir(args)
+            except FileNotFoundError:
+                print(f"cd: no such file or directory: {args}")
         else:
             # Check if command exists in system PATH
             path = shutil.which(command)

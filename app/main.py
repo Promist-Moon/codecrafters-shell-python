@@ -19,16 +19,16 @@ def tokenize_input(ipt: str):
             has_escape = not has_escape
             continue
 
+        if char == "\\" and not in_single_quote:
+            has_escape = not has_escape
+            continue
+
         if char == "'" and not in_double_quote:
             in_single_quote = not in_single_quote
             continue
 
         if char == '"' and not in_single_quote:
             in_double_quote = not in_double_quote
-            continue
-
-        if char == "\\" and not in_single_quote and not in_double_quote:
-            has_escape = not has_escape
             continue
 
         if char.isspace() and not in_single_quote and not in_double_quote:

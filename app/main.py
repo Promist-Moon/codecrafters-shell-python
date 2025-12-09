@@ -19,7 +19,7 @@ def tokenize_input(ipt: str):
             has_escape = False
             continue
 
-        if char == "\\" and not in_single_quote:
+        if char == "\\" and not in_single_quote and not in_double_quote:
             has_escape = True
             continue
 

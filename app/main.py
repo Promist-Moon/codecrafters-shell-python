@@ -4,6 +4,31 @@ import subprocess
 import sys
 
 
+def tokenize_input(ipt: str):
+    """Splits user input while keeping input in single quotes literal."""
+    tokens = []
+    current = []
+    in_single_quote = False
+
+    for char in ipt:
+        if char == "'":
+            in_single_quote = not in_single_quote
+            continue
+
+        if char.isspace() and not in_single_quote:
+            if current:
+                tokens.append("".join(current))
+                current = []
+            continue
+
+        current.append(char)
+
+    if current:
+        tokens.append("".join(current))
+
+    return tokens
+
+
 def main():
     while True:
         sys.stdout.write("$ ")
@@ -11,43 +36,58 @@ def main():
         commands = ["echo", "type", "exit", "pwd", "cd"]
         
         ipt = input()
-        parts = ipt.split(maxsplit=1)
-        command = parts[0]
-        args = parts[1] if len(parts) > 1 else ""
+        parts = tokenize_input(ipt)
 
+        if not parts:
+            continue
+
+        command = parts[0]
+        args = parts[1:]
+        
+
+        
         if command == "exit":
             sys.exit(0)
         elif command == "echo":
-            print(args)
+            print(" ".join(args))
         elif command == "type":
-            if args in commands:
-                print(f"{args} is a shell builtin")
+            if not args:
+                continue
+
+            target = args[0]
+            if target in commands:
+                print(f"{target} is a shell builtin")
             else:
-                path = shutil.which(args)
+                path = shutil.which(target)
                 if path is None:
-                    print(f"{args}: not found")
+                    print(f"{target}: not found")
                 else: 
                     # get absolute path
-                    print(f"{args} is {path}")
+                    print(f"{target} is {path}")
         elif command == "pwd":
             print(os.getcwd())
         elif command == "cd":
-            # only support 'cd' with absolute path
+            if not args:
+                target_dir = os.environ.get("HOME", "")
+            else:
+                target_dir = args[0]
+
+            # support 'cd' with both absolute and relative path
             home = os.environ.get('HOME')
-            if args == "~":
-                args = home
-                
+            if target_dir == "~":
+                target_dir = home
+
             try:
-                os.chdir(args)
+                os.chdir(target_dir)
             except FileNotFoundError:
-                print(f"cd: no such file or directory: {args}")
+                print(f"cd: no such file or directory: {target_dir}")
         else:
             # Check if command exists in system PATH
             path = shutil.which(command)
             if path is None:
                 print(f"{command}: command not found")
             else:
-                subprocess.run([command] + args.split())
+                subprocess.run([command] + args)
             
         pass
 

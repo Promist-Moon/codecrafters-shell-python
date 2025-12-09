@@ -10,8 +10,15 @@ def tokenize_input(ipt: str):
     current = []
     in_single_quote = False
     in_double_quote = False
+    has_escape = False
 
     for char in ipt:
+
+        if has_escape:
+            current.append(char)
+            has_escape = not has_escape
+            continue
+
         if char == "'" and not in_double_quote:
             in_single_quote = not in_single_quote
             continue
@@ -20,10 +27,15 @@ def tokenize_input(ipt: str):
             in_double_quote = not in_double_quote
             continue
 
+        if char == "\\" and not in_single_quote and not in_double_quote:
+            has_escape = not has_escape
+            continue
+
         if char.isspace() and not in_single_quote and not in_double_quote:
             if current:
                 tokens.append("".join(current))
                 current = []
+
             continue
 
         current.append(char)
@@ -48,8 +60,6 @@ def main():
 
         command = parts[0]
         args = parts[1:]
-        
-
         
         if command == "exit":
             sys.exit(0)
@@ -82,6 +92,7 @@ def main():
             if target_dir == "~":
                 target_dir = home
 
+            # try to change directory, return error if fails
             try:
                 os.chdir(target_dir)
             except FileNotFoundError:

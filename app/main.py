@@ -5,17 +5,23 @@ import sys
 
 
 def tokenize_input(ipt: str):
-    """Splits user input while keeping input in single quotes literal."""
+    """Splits user input while keeping input in single and double quotes literal."""
     tokens = []
     current = []
     in_single_quote = False
+    in_double_quote = False
 
     for char in ipt:
         if char == "'":
-            in_single_quote = not in_single_quote
+            if not in_double_quote:
+                in_single_quote = not in_single_quote
             continue
 
-        if char.isspace() and not in_single_quote:
+        if char == '"':
+            in_double_quote = not in_double_quote
+            continue
+
+        if char.isspace() and not in_single_quote and not in_double_quote:
             if current:
                 tokens.append("".join(current))
                 current = []

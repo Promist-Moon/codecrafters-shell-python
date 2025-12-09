@@ -34,7 +34,7 @@ def main():
             if path is None:
                 print(f"{command}: command not found")
             else:
-                subprocess.run([command] + args.split(), shell=True, capture_output=True)
+                subprocess.run([command] + args.split())
             
         pass
 

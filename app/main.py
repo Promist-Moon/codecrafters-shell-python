@@ -17,7 +17,7 @@ def main():
         if command == "exit":
             sys.exit(0)
         elif command == "echo":
-            print(command[5:])
+            print(args)
         elif command == "type":
             if args in commands:
                 print(f"{args} is a shell builtin")

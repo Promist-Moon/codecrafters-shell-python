@@ -5,7 +5,7 @@ import sys
 
 
 def tokenize_input(ipt: str):
-    """plits user input while keeping input in single and double quotes literal."""
+    """Splits user input while keeping input in single and double quotes literal."""
     tokens = []
     current = []
     in_single_quote = False
@@ -20,6 +20,9 @@ def tokenize_input(ipt: str):
             continue
 
         if char == "\\" and not in_single_quote:
+            if in_double_quote:
+                current.append(char)
+                continue
             has_escape = not has_escape
             continue
 

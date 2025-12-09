@@ -1,8 +1,8 @@
+import os
 import sys
 
 
 def main():
-    # TODO: Uncomment the code below to pass the first stage
     while True:
         sys.stdout.write("$ ")
 
@@ -17,6 +17,9 @@ def main():
             cmd = command[5:]
             if cmd in commands:
                 print(f"{cmd} is a shell builtin")
+            elif os.access(cmd, os.X_OK):
+                # get absolute path
+                print(f"{cmd} is {os.path.abspath(cmd)}")
             else:
                 print(f"{cmd}: not found")
         else:

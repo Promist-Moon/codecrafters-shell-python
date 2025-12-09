@@ -1,5 +1,5 @@
-import os
 import shutil
+import subprocess
 import sys
 
 
@@ -29,7 +29,13 @@ def main():
                     # get absolute path
                     print(f"{args} is {path}")
         else:
-            print(f"{command}: command not found")
+            # Check if command exists in system PATH
+            path = shutil.which(command)
+            if path is None:
+                print(f"{command}: command not found")
+            else:
+                subprocess.run([command] + args.split(), shell=True, capture_output=True)
+            
         pass
 
 

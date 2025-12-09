@@ -21,11 +21,13 @@ def main():
         elif command == "type":
             if args in commands:
                 print(f"{args} is a shell builtin")
-            elif shutil.which(args):
-                # get absolute path
-                print(f"{args} is {os.path.abspath(args)}")
             else:
-                print(f"{args}: not found")
+                path = shutil.which(args)
+                if path is None:
+                    print(f"{args}: not found")
+                else: 
+                    # get absolute path
+                    print(f"{args} is {path}")
         else:
             print(f"{command}: command not found")
         pass

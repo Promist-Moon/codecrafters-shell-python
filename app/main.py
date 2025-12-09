@@ -21,7 +21,6 @@ def tokenize_input(ipt: str):
 
         if char == "\\" and not in_single_quote:
             if in_double_quote:
-                current.append(char)
                 continue
             has_escape = not has_escape
             continue

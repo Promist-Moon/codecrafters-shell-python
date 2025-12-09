@@ -33,6 +33,10 @@ def main():
             print(os.getcwd())
         elif command == "cd":
             # only support 'cd' with absolute path
+            home = os.environ.get('HOME')
+            if args == "~":
+                args = home
+                
             try:
                 os.chdir(args)
             except FileNotFoundError:

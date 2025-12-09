@@ -7,7 +7,7 @@ def main():
     
     command = input()
     if command:
-        print("Error: Command not found")
+        print(f"{command}: command not found")
 
     pass
 

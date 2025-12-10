@@ -116,8 +116,20 @@ def tokenize_input(ipt: str):
 
     return tokens
 
+def get_executables_in_path():
+    executables = set()
+    for directory in os.environ.get("PATH", "").split(os.pathsep):
+        if os.path.isdir(directory):
+            for filename in os.listdir(directory):
+                filepath = os.path.join(directory, filename)
+                if os.access(filepath, os.X_OK) and not os.path.isdir(filepath):
+                    executables.add(filename)
+    return sorted(executables)
+
 def complete(text, state):
-    options = [cmd for cmd in COMMANDS if cmd.startswith(text)]
+    # commands = command + executable files in PATH
+    commands = COMMANDS + get_executables_in_path()
+    options = [cmd for cmd in commands if cmd.startswith(text)]
     if state < len(options):
         if len(options) == 1 and state == 0:
             return options[state] + " "

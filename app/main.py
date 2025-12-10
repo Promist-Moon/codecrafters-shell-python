@@ -128,7 +128,8 @@ def get_executables_in_path():
 
 def complete(text, state):
     # commands = command + executable files in PATH
-    commands = COMMANDS + get_executables_in_path()
+    # remove duplicates by using set
+    commands = set(COMMANDS + get_executables_in_path())
     options = [cmd for cmd in commands if cmd.startswith(text)]
     if state < len(options):
         if len(options) == 1 and state == 0:

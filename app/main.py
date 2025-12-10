@@ -149,8 +149,13 @@ def main():
                 print("Syntax error: no command specified before redirection", file=sys.stderr)
                 continue
 
-        if "2>" in parts:
-            idx = parts.index("2>")
+        if "2>" in parts or "2>>" in parts:
+            if "2>>" in parts:
+                idx = parts.index("2>>")
+                has_append = True
+            else:
+                idx = parts.index("2>")
+            
             if idx == len(parts) - 1:
                 print("Syntax error: no file specified for error redirection", file=sys.stderr)
                 continue

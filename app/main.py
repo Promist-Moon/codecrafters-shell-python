@@ -13,6 +13,7 @@ def tokenize_input(ipt: str):
     has_escape = False
     has_one = False
     has_two = False
+    has_append = False
 
     for char in ipt:
 
@@ -42,10 +43,7 @@ def tokenize_input(ipt: str):
 
         if has_one:
             if char == ">":
-                if current:
-                    tokens.append("".join(current))
-                    current = []
-                tokens.append(">")
+                has_append = True
                 has_one = False
                 continue
             else:
@@ -64,12 +62,22 @@ def tokenize_input(ipt: str):
                 current.append("2")
                 has_two = False
 
-        if char == ">" and not in_single_quote and not in_double_quote:
-            if current:
-                tokens.append("".join(current))
-                current = []
-            tokens.append(">")
-            continue
+        if has_append and not in_single_quote and not in_double_quote:
+            # double >>
+            if char == ">":
+                if current:
+                    tokens.append("".join(current))
+                    current = []
+                tokens.append(">>")
+                has_append = False
+                continue
+            # single >
+            else:
+                if current:
+                    tokens.append("".join(current))
+                    current = []
+                tokens.append(">")
+                continue            
 
         if char == "1" and not in_single_quote and not in_double_quote:
             has_one = True
@@ -114,9 +122,15 @@ def main():
 
         redirect_path = None
         error_path = None
+        has_append = False
 
-        if ">" in parts:
-            idx = parts.index(">")
+        if ">" or ">>" in parts:
+            if ">>" in parts:
+                idx = parts.index(">>")
+                has_append = True
+            else:
+                idx = parts.index(">")
+
             if idx == len(parts) - 1:
                 print("Syntax error: no file specified for redirection", file=sys.stderr)
                 continue
@@ -150,7 +164,10 @@ def main():
 
         if redirect_path:
             try:
-                redirect_stream = open(redirect_path, "w")
+                if has_append:
+                    redirect_stream = open(redirect_path, "a")
+                else:
+                    redirect_stream = open(redirect_path, "w")
                 target_stream = redirect_stream
             except OSError as exc:
                 print(f"Error opening file {redirect_path} for writing: {exc}", file=sys.stderr)

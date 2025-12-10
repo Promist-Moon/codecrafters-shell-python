@@ -114,6 +114,7 @@ def main():
 
         redirect_path = None
         error_path = None
+
         if ">" in parts:
             idx = parts.index(">")
             if idx == len(parts) - 1:
@@ -126,7 +127,8 @@ def main():
             if not parts:
                 print("Syntax error: no command specified before redirection", file=sys.stderr)
                 continue
-        elif "2>" in parts:
+
+        if "2>" in parts:
             idx = parts.index("2>")
             if idx == len(parts) - 1:
                 print("Syntax error: no file specified for error redirection", file=sys.stderr)
@@ -157,7 +159,6 @@ def main():
         if error_path:
             try:
                 error_stream = open(error_path, "w")
-                sys.stderr = error_stream
             except OSError as exc:
                 print(f"Error opening file {error_path} for writing: {exc}", file=sys.stderr)
                 if redirect_stream:
@@ -199,20 +200,23 @@ def main():
                 try:
                     os.chdir(target_dir)
                 except FileNotFoundError:
-                    print(f"cd: no such file or directory: {target_dir}", file=sys.stderr)
+                    print(f"cd: no such file or directory: {target_dir}", file=error_stream)
             else:
                 # Check if command exists in system PATH
                 path = shutil.which(command)
                 if path is None:
-                    print(f"{command}: command not found", file=sys.stderr)
+                    print(f"{command}: command not found", file=error_stream)
                 else:
-                    if redirect_stream:
-                        subprocess.run([command] + args, stdout=redirect_stream)
-                    else:
-                        subprocess.run([command] + args)
+                    subprocess.run(
+                        [command] + args,
+                        stdout=redirect_stream if redirect_stream else None,
+                        stderr=error_stream if error_path else None,
+                    )
         finally:
             if redirect_stream:
                 redirect_stream.close()
+            if error_path and error_stream not in (None, sys.stderr):
+                error_stream.close()
 
 
 if __name__ == "__main__":

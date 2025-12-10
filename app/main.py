@@ -71,6 +71,9 @@ def tokenize_input(ipt: str):
 
         current.append(char)
 
+    if has_one:
+        current.append("1")
+
     if current:
         tokens.append("".join(current))
 

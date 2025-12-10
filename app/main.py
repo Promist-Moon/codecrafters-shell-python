@@ -187,7 +187,10 @@ def main():
 
         if error_path:
             try:
-                error_stream = open(error_path, "w")
+                if has_append:
+                    error_stream = open(error_path, "w")
+                else:
+                    error_stream = open(error_path, "a")
             except OSError as exc:
                 print(f"Error opening file {error_path} for writing: {exc}", file=sys.stderr)
                 if redirect_stream:

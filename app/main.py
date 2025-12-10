@@ -12,6 +12,7 @@ def tokenize_input(ipt: str):
     in_double_quote = False
     has_escape = False
     has_one = False
+    has_two = False
 
     for char in ipt:
 
@@ -50,6 +51,20 @@ def tokenize_input(ipt: str):
             else:
                 current.append("1")
                 has_one = False
+                continue
+
+        if has_two:
+            if char == ">":
+                if current:
+                    tokens.append("".join(current))
+                    current = []
+                tokens.append(">>")
+                has_two = False
+                continue
+            else:
+                current.append("2")
+                has_two = False
+                continue
 
         if char == ">" and not in_single_quote and not in_double_quote:
             if current:
@@ -60,6 +75,10 @@ def tokenize_input(ipt: str):
 
         if char == "1" and not in_single_quote and not in_double_quote:
             has_one = True
+            continue
+
+        if char == "2" and not in_single_quote and not in_double_quote:
+            has_two = True
             continue
 
         if char.isspace() and not in_single_quote and not in_double_quote:
@@ -73,6 +92,9 @@ def tokenize_input(ipt: str):
 
     if has_one:
         current.append("1")
+
+    if has_two:
+        current.append("2")
 
     if current:
         tokens.append("".join(current))
@@ -93,7 +115,7 @@ def main():
             continue
 
         redirect_path = None
-        if ">" in parts:
+        if ">" or ">>" in parts:
             idx = parts.index(">")
             if idx == len(parts) - 1:
                 print("Syntax error: no file specified for redirection", file=sys.stderr)
@@ -124,6 +146,9 @@ def main():
             if command == "exit":
                 sys.exit(0)
             elif command == "echo":
+                if ">>" in parts:
+                    print(str(sys.stderr), file=target_stream)
+                    continue
                 print(" ".join(args), file=target_stream)
             elif command == "type":
                 if not args:

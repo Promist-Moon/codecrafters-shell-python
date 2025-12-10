@@ -51,7 +51,6 @@ def tokenize_input(ipt: str):
             else:
                 current.append("1")
                 has_one = False
-                continue
 
         if has_two:
             if char == ">":
@@ -64,7 +63,6 @@ def tokenize_input(ipt: str):
             else:
                 current.append("2")
                 has_two = False
-                continue
 
         if char == ">" and not in_single_quote and not in_double_quote:
             if current:
@@ -170,9 +168,6 @@ def main():
             if command == "exit":
                 sys.exit(0)
             elif command == "echo":
-                if ">>" in parts:
-                    print(str(sys.stderr), file=target_stream)
-                    continue
                 print(" ".join(args), file=target_stream)
             elif command == "type":
                 if not args:

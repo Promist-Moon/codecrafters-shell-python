@@ -86,7 +86,16 @@ def tokenize_input(ipt: str):
                 current = []
             tokens.append(">")
             pending_append = True
-            continue            
+            continue
+
+        # pipeline
+        if char == "|" and not in_single_quote and not in_double_quote:
+            if current:
+                tokens.append("".join(current))
+                current = []
+            tokens.append("|")
+            pending_append = True
+            continue              
 
         if char == "1" and not in_single_quote and not in_double_quote:
             has_one = True
@@ -166,6 +175,7 @@ def main():
             error_path = None
             has_append = False
 
+            # redirect output
             if ">" in parts or ">>" in parts:
                 if ">>" in parts:
                     idx = parts.index(">>")
@@ -184,6 +194,7 @@ def main():
                     print("Syntax error: no command specified before redirection", file=sys.stderr)
                     continue
 
+            # redirect errors
             if "2>" in parts or "2>>" in parts:
                 if "2>>" in parts:
                     idx = parts.index("2>>")
@@ -201,6 +212,33 @@ def main():
                 if not parts:
                     print("Syntax error: no command specified before error redirection", file=sys.stderr)
                     continue
+
+            # pipeline handling
+            if "|" in parts:
+                pipe_idx = parts.index("|")
+                first_command = parts[:pipe_idx]
+                second_command = parts[pipe_idx + 1:]
+
+                if not first_command or not second_command:
+                    print("Syntax error: invalid pipeline", file=sys.stderr)
+                    continue
+
+                # first subprocess
+                p1 = subprocess.Popen(first_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+                # second subprocess, taking input from the first
+                p2 = subprocess.Popen(second_command, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+                p1.stdout.close()
+                output, errors = p2.communicate()
+
+                # Print output and errors
+                if output:
+                    sys.stdout.buffer.write(output)
+                if errors:
+                    sys.stderr.buffer.write(errors)
+
+                continue
 
             command = parts[0]
             args = parts[1:]

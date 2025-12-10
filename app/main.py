@@ -58,7 +58,7 @@ def tokenize_input(ipt: str):
                 if current:
                     tokens.append("".join(current))
                     current = []
-                tokens.append(">>")
+                tokens.append("2>")
                 has_two = False
                 continue
             else:
@@ -115,7 +115,8 @@ def main():
             continue
 
         redirect_path = None
-        if ">" or ">>" in parts:
+        error_path = None
+        if ">" in parts:
             idx = parts.index(">")
             if idx == len(parts) - 1:
                 print("Syntax error: no file specified for redirection", file=sys.stderr)
@@ -127,12 +128,25 @@ def main():
             if not parts:
                 print("Syntax error: no command specified before redirection", file=sys.stderr)
                 continue
+        elif "2>" in parts:
+            idx = parts.index("2>")
+            if idx == len(parts) - 1:
+                print("Syntax error: no file specified for error redirection", file=sys.stderr)
+                continue
+
+            error_path = parts[idx + 1]
+            parts = parts[:idx] + parts[idx + 2:]
+
+            if not parts:
+                print("Syntax error: no command specified before error redirection", file=sys.stderr)
+                continue
 
         command = parts[0]
         args = parts[1:]
 
         redirect_stream = None
         target_stream = sys.stdout
+        error_stream = sys.stderr
 
         if redirect_path:
             try:
@@ -140,6 +154,16 @@ def main():
                 target_stream = redirect_stream
             except OSError as exc:
                 print(f"Error opening file {redirect_path} for writing: {exc}", file=sys.stderr)
+                continue
+
+        if error_path:
+            try:
+                error_stream = open(error_path, "w")
+                sys.stderr = error_stream
+            except OSError as exc:
+                print(f"Error opening file {error_path} for writing: {exc}", file=sys.stderr)
+                if redirect_stream:
+                    redirect_stream.close()
                 continue
         
         try:

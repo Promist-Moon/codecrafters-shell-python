@@ -119,6 +119,8 @@ def tokenize_input(ipt: str):
 def complete(text, state):
     options = [cmd for cmd in COMMANDS if cmd.startswith(text)]
     if state < len(options):
+        if len(options) == 1 and state == 0:
+            return options[state] + " "
         return options[state]
     else:
         return None
@@ -272,9 +274,6 @@ def main():
                     error_stream.close()
         except EOFError:
             break
-
-        
-
 
 if __name__ == "__main__":
     main()

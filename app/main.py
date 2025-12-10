@@ -58,6 +58,7 @@ def tokenize_input(ipt: str):
                     tokens.append("".join(current))
                     current = []
                 tokens.append(">")
+                pending_append = True
                 has_one = False
                 continue
             else:
@@ -69,6 +70,7 @@ def tokenize_input(ipt: str):
                 if current:
                     tokens.append("".join(current))
                     current = []
+                pending_append = True
                 tokens.append("2>")
                 has_two = False
                 continue

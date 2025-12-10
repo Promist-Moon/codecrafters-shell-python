@@ -155,8 +155,7 @@ def main():
 
     while True:
         try:
-            sys.stdout.write("$ ")
-            ipt = input()
+            ipt = input("$ ")
 
             parts = tokenize_input(ipt)
 

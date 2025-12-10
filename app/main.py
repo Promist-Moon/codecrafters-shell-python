@@ -129,7 +129,7 @@ def main():
         error_path = None
         has_append = False
 
-        if ">" or ">>" in parts:
+        if ">" in parts or ">>" in parts:
             if ">>" in parts:
                 idx = parts.index(">>")
                 has_append = True

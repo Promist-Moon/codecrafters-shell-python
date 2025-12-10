@@ -13,7 +13,7 @@ def tokenize_input(ipt: str):
     has_escape = False
     has_one = False
     has_two = False
-    has_append = False
+    pending_append = False
 
     for char in ipt:
 
@@ -41,9 +41,23 @@ def tokenize_input(ipt: str):
             in_double_quote = not in_double_quote
             continue
 
+        if pending_append and not in_single_quote and not in_double_quote:
+            if char == ">":
+                # change previous token to '>>'
+                if tokens and tokens[-1].endswith(">"):
+                    tokens[-1] = tokens[-1] + ">"
+                pending_append = False
+                continue
+            else:
+                # keep previous token as-is
+                pending_append = False
+
         if has_one:
             if char == ">":
-                has_append = True
+                if current:
+                    tokens.append("".join(current))
+                    current = []
+                tokens.append(">")
                 has_one = False
                 continue
             else:
@@ -62,22 +76,13 @@ def tokenize_input(ipt: str):
                 current.append("2")
                 has_two = False
 
-        if has_append and not in_single_quote and not in_double_quote:
-            # double >>
-            if char == ">":
-                if current:
-                    tokens.append("".join(current))
-                    current = []
-                tokens.append(">>")
-                has_append = False
-                continue
-            # single >
-            else:
-                if current:
-                    tokens.append("".join(current))
-                    current = []
-                tokens.append(">")
-                continue            
+        if char == ">" and not in_single_quote and not in_double_quote:
+            if current:
+                tokens.append("".join(current))
+                current = []
+            tokens.append(">")
+            pending_append = True
+            continue            
 
         if char == "1" and not in_single_quote and not in_double_quote:
             has_one = True

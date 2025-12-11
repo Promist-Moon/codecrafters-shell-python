@@ -219,24 +219,28 @@ def main():
                 first_command = parts[:pipe_idx]
                 second_command = parts[pipe_idx + 1:]
 
+                first_is_builtin = first_command[0] in COMMANDS
+                second_is_builtin = second_command[0] in COMMANDS
+
                 if not first_command or not second_command:
                     print("Syntax error: invalid pipeline", file=sys.stderr)
                     continue
 
                 # first subprocess
                 # check if builtin command
-                if (first_command[0] in COMMANDS):
-                    p1 = subprocess.Popen(first_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                else:
-                    p1 = subprocess.Popen(first_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                p1 = subprocess.Popen(first_command, shell=first_is_builtin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if (first_is_builtin):
+                    p1_process = subprocess.run(first_command, capture_output=True, check=True)
+                    print(p1_process.stdout, end='')
 
                 try:
                     # second subprocess, taking input from the first
                     # check if builtin command
-                    if (second_command[0] in COMMANDS):
-                        p2 = subprocess.Popen(second_command, shell=True, stdin=p1.stdout, stderr=subprocess.PIPE)
-                    else:
-                        p2 = subprocess.Popen(second_command, stdin=p1.stdout, stderr=subprocess.PIPE)
+                    p2 = subprocess.Popen(second_command, shell=second_is_builtin, stdin=p1.stdout, stderr=subprocess.PIPE)
+
+                    if (second_is_builtin):
+                        p2_process = subprocess.run(second_command, input=p1_process.stdout, text=True, capture_output=True, check=True)
+                        print(p2_process.stdout, end='')
 
                     p1.stdout.close()
                     p2.wait()

@@ -1,3 +1,4 @@
+import io
 import os
 import readline
 import shutil
@@ -228,19 +229,20 @@ def main():
 
                 # first subprocess
                 # check if builtin command
-                p1 = subprocess.Popen(first_command, shell=first_is_builtin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 if (first_is_builtin):
-                    p1_process = subprocess.run(first_command, capture_output=True, check=True)
-                    print(p1_process.stdout, end='')
+                    p1 = io.StringIO(first_command)
+                    sys.stdout = p1
+                else:
+                    p1 = subprocess.Popen(first_command, shell=first_is_builtin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
                 try:
                     # second subprocess, taking input from the first
                     # check if builtin command
-                    p2 = subprocess.Popen(second_command, shell=second_is_builtin, stdin=p1.stdout, stderr=subprocess.PIPE)
-
                     if (second_is_builtin):
-                        p2_process = subprocess.run(second_command, input=p1_process.stdout, text=True, capture_output=True, check=True)
-                        print(p2_process.stdout, end='')
+                        p2 = io.StringIO(second_command)
+                        sys.stdin = p1.stdout
+                    else:
+                        p2 = subprocess.Popen(second_command, stdin=p1.stdout, stderr=subprocess.PIPE)
 
                     p1.stdout.close()
                     p2.wait()

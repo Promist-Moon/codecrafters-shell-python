@@ -292,7 +292,7 @@ def main():
                     if (second_is_builtin):
                         p2 = run_builtin(second_command[0], second_command[1:], stdin_data=p1 if first_is_builtin else p1.stdout.read().decode())
                     else:
-                        p2 = subprocess.Popen(second_command, stdin=p1.stdout, stderr=subprocess.PIPE)
+                        p2 = subprocess.Popen(second_command, stdin=p1 if first_is_builtin else p1.stdout.read().decode(), stderr=subprocess.PIPE)
 
                     p1.stdout.close()
                     p2.wait()

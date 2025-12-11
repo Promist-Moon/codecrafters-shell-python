@@ -234,10 +234,6 @@ def main():
                     output, errors = p2.communicate()
                     p1.wait()
 
-                    if output:
-                        sys.stdout.buffer.write(output)
-                    if errors:
-                        sys.stderr.buffer.write(errors)
                 except Exception as e:
                     p1.terminate()
                     print(f"Error executing command: {e}", file=sys.stderr)

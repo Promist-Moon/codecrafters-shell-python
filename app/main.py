@@ -159,7 +159,21 @@ def setup_readline():
         # GNU readline syntax
         readline.parse_and_bind("tab: complete")
 
-def run_builtin(command, args, target_stream, error_stream):
+def run_builtin(cmd, args, stdin_data=None):
+    original_stdout = sys.stdout
+    original_stdin = sys.stdin
+    buf = io.StringIO()
+    try:
+        sys.stdout = buf
+        if stdin_data is not None:
+            sys.stdin = io.StringIO(stdin_data)
+        execute_builtin(cmd, args, original_stdout, sys.stderr)
+    finally:
+        sys.stdout = original_stdout
+        sys.stdin = original_stdin
+    return buf.getvalue()
+
+def execute_builtin(command, args, target_stream, error_stream):
     if command == "exit":
         sys.exit(0)
     elif command == "echo":
@@ -273,7 +287,6 @@ def main():
                     p1 = subprocess.Popen(first_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
                 try:
-                    sys.stdin = p1.stdout
                     # second subprocess, taking input from the first
                     # check if builtin command
                     if (second_is_builtin):
@@ -325,7 +338,7 @@ def main():
             
             try:
                 if command in COMMANDS:
-                    run_builtin(command, args, target_stream, error_stream)
+                    execute_builtin(command, args, target_stream, error_stream)
                 else:
                     # Check if command exists in system PATH
                     path = shutil.which(command)

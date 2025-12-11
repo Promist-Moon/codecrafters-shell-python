@@ -226,11 +226,22 @@ def main():
                 # first subprocess
                 p1 = subprocess.Popen(first_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-                # second subprocess, taking input from the first
-                p2 = subprocess.Popen(second_command, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                try:
+                    # second subprocess, taking input from the first
+                    p2 = subprocess.Popen(second_command, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-                p1.stdout.close()
-                output, errors = p2.communicate()
+                    p1.stdout.close()
+                    output, errors = p2.communicate()
+                    p1.wait()
+
+                    if output:
+                        sys.stdout.buffer.write(output)
+                    if errors:
+                        sys.stderr.buffer.write(errors)
+                except Exception as e:
+                    p1.terminate()
+                    print(f"Error executing command: {e}", file=sys.stderr)
+                    continue
 
                 # Print output and errors
                 if output:

@@ -224,11 +224,19 @@ def main():
                     continue
 
                 # first subprocess
-                p1 = subprocess.Popen(first_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                # check if builtin command
+                if (first_command[0] in COMMANDS):
+                    p1 = subprocess.Popen(first_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                else:
+                    p1 = subprocess.Popen(first_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
                 try:
                     # second subprocess, taking input from the first
-                    p2 = subprocess.Popen(second_command, stdin=p1.stdout, stderr=subprocess.PIPE)
+                    # check if builtin command
+                    if (second_command[0] in COMMANDS):
+                        p2 = subprocess.Popen(second_command, shell=True, stdin=p1.stdout, stderr=subprocess.PIPE)
+                    else:
+                        p2 = subprocess.Popen(second_command, stdin=p1.stdout, stderr=subprocess.PIPE)
 
                     p1.stdout.close()
                     p2.wait()
@@ -240,6 +248,7 @@ def main():
                     continue
 
                 continue
+                
 
             command = parts[0]
             args = parts[1:]

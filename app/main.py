@@ -159,6 +159,43 @@ def setup_readline():
         # GNU readline syntax
         readline.parse_and_bind("tab: complete")
 
+def run_builtin(command, args, target_stream, error_stream):
+    if command == "exit":
+        sys.exit(0)
+    elif command == "echo":
+        print(" ".join(args), file=target_stream)
+    elif command == "type":
+        if not args:
+            return
+        target = args[0]
+        if target in COMMANDS:
+            print(f"{target} is a shell builtin", file=target_stream)
+        else:
+            path = shutil.which(target)
+            if path is None:
+                print(f"{target}: not found", file=target_stream)
+            else: 
+                # get absolute path
+                print(f"{target} is {path}", file=target_stream)
+    elif command == "pwd":
+        print(os.getcwd(), file=target_stream)
+    elif command == "cd":
+        if not args:
+            target_dir = os.environ.get("HOME", "")
+        else:
+            target_dir = args[0]
+
+        # support 'cd' with both absolute and relative path
+        home = os.environ.get('HOME')
+        if target_dir == "~":
+            target_dir = home
+
+        # try to change directory, return error if fails
+        try:
+            os.chdir(target_dir)
+        except FileNotFoundError:
+            print(f"cd: no such file or directory: {target_dir}", file=error_stream)
+
 
 def main():
     setup_readline()
@@ -230,17 +267,17 @@ def main():
                 # first subprocess
                 # check if builtin command
                 if (first_is_builtin):
-                    p1 = io.StringIO(' '.join(first_command))
+                    p1 = run_builtin(first_command[0], first_command[1:], io.StringIO(), sys.stderr)
                     sys.stdout = p1
                 else:
-                    p1 = subprocess.Popen(first_command, shell=first_is_builtin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    p1 = subprocess.Popen(first_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
                 try:
+                    sys.stdin = p1.stdout
                     # second subprocess, taking input from the first
                     # check if builtin command
                     if (second_is_builtin):
-                        p2 = io.StringIO(' '.join(second_command))
-                        sys.stdin = p1.stdout
+                        p2 = run_builtin(second_command[0], second_command[1:], sys.stdout, sys.stderr)
                     else:
                         p2 = subprocess.Popen(second_command, stdin=p1.stdout, stderr=subprocess.PIPE)
 
@@ -287,41 +324,8 @@ def main():
                     continue
             
             try:
-                if command == "exit":
-                    sys.exit(0)
-                elif command == "echo":
-                    print(" ".join(args), file=target_stream)
-                elif command == "type":
-                    if not args:
-                        continue
-                    target = args[0]
-                    if target in COMMANDS:
-                        print(f"{target} is a shell builtin", file=target_stream)
-                    else:
-                        path = shutil.which(target)
-                        if path is None:
-                            print(f"{target}: not found", file=target_stream)
-                        else: 
-                            # get absolute path
-                            print(f"{target} is {path}", file=target_stream)
-                elif command == "pwd":
-                    print(os.getcwd(), file=target_stream)
-                elif command == "cd":
-                    if not args:
-                        target_dir = os.environ.get("HOME", "")
-                    else:
-                        target_dir = args[0]
-
-                    # support 'cd' with both absolute and relative path
-                    home = os.environ.get('HOME')
-                    if target_dir == "~":
-                        target_dir = home
-
-                    # try to change directory, return error if fails
-                    try:
-                        os.chdir(target_dir)
-                    except FileNotFoundError:
-                        print(f"cd: no such file or directory: {target_dir}", file=error_stream)
+                if command in COMMANDS:
+                    run_builtin(command, args, target_stream, error_stream)
                 else:
                     # Check if command exists in system PATH
                     path = shutil.which(command)

@@ -281,7 +281,7 @@ def main():
                 # first subprocess
                 # check if builtin command
                 if (first_is_builtin):
-                    p1 = run_builtin(first_command[0], first_command[1:], io.StringIO(), sys.stderr)
+                    p1 = run_builtin(first_command[0], first_command[1:])
                     sys.stdout = p1
                 else:
                     p1 = subprocess.Popen(first_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -290,7 +290,7 @@ def main():
                     # second subprocess, taking input from the first
                     # check if builtin command
                     if (second_is_builtin):
-                        p2 = run_builtin(second_command[0], second_command[1:], sys.stdout, sys.stderr)
+                        p2 = run_builtin(second_command[0], second_command[1:], stdin_data=p1.stdout.read().decode())
                     else:
                         p2 = subprocess.Popen(second_command, stdin=p1.stdout, stderr=subprocess.PIPE)
 

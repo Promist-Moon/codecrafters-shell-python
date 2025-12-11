@@ -167,7 +167,7 @@ def run_builtin(cmd, args, stdin_data=None):
         sys.stdout = buf
         if stdin_data is not None:
             sys.stdin = io.StringIO(stdin_data)
-        execute_builtin(cmd, args, original_stdout, sys.stderr)
+        execute_builtin(cmd, args, buf, sys.stderr)
     finally:
         sys.stdout = original_stdout
         sys.stdin = original_stdin
@@ -299,7 +299,8 @@ def main():
                     p1.wait()
 
                 except Exception as e:
-                    p1.terminate()
+                    if not first_is_builtin:
+                        p1.terminate()
                     print(f"Error executing command: {e}", file=sys.stderr)
                     continue
 

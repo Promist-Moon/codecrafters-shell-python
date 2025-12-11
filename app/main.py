@@ -228,22 +228,16 @@ def main():
 
                 try:
                     # second subprocess, taking input from the first
-                    p2 = subprocess.Popen(second_command, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    p2 = subprocess.Popen(second_command, stdin=p1.stdout, stderr=subprocess.PIPE)
 
                     p1.stdout.close()
-                    output, errors = p2.communicate()
+                    p2.wait()
                     p1.wait()
 
                 except Exception as e:
                     p1.terminate()
                     print(f"Error executing command: {e}", file=sys.stderr)
                     continue
-
-                # Print output and errors
-                if output:
-                    sys.stdout.buffer.write(output)
-                if errors:
-                    sys.stderr.buffer.write(errors)
 
                 continue
 
